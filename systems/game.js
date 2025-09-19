@@ -328,21 +328,24 @@ export function updateGame() {
 
 function grabAndThrow(fish) {
     if (!bear || !fish || fish.userData?.thrown) return;
+    if (!fish.userData) fish.userData = {};
+    if (!fish.userData.velocity || !fish.userData.velocity.set) fish.userData.velocity = new THREE.Vector3(0,0,0);
     const side = fish.position.x >= bear.position.x ? 'right' : 'left';
-    const hand = getHandAnchor(bear, side);
+    let hand = getHandAnchor(bear, side) || getHandAnchor(bear, side === 'right' ? 'left' : 'right');
     if (!hand) return;
-    const arm = bear.getObjectByName(side==='right'?'rightArm':'leftArm');
+    const arm = bear.getObjectByName(side==='right'?'rightArm':'leftArm') || bear.getObjectByName(side==='right'?'leftArm':'rightArm');
     if (!arm || !arm.rotation) return; // guard against missing arm
+    const isRight = arm?.name === 'rightArm';
     fish.userData.velocity.set(0,0,0); fish.userData.pattern = 'held';
     if (fish.parent) fish.parent.remove(fish); hand.add(fish);
-    fish.position.set(0.08 * (side==='right'?1:-1), -0.35, 0.30);
-    fish.rotation.set(-Math.PI/6, side==='right'?Math.PI/2:-Math.PI/2, Math.PI);
+    fish.position.set(0.08 * (isRight?1:-1), -0.35, 0.30);
+    fish.rotation.set(-Math.PI/6, isRight?Math.PI/2:-Math.PI/2, Math.PI);
     const bend1 = new TWEEN.Tween(bear.rotation).to({ x: -0.28 }, 140).easing(TWEEN.Easing.Sine.InOut);
     const prep  = new TWEEN.Tween(arm.rotation).to({ x: -0.6 }, 140).easing(TWEEN.Easing.Sine.InOut);
     const throwTw = new TWEEN.Tween(arm.rotation).to({ x: 1.25 }, 180).easing(TWEEN.Easing.Sine.Out).onStart(()=>{
         if (fish.parent) hand.remove(fish), scene.add(fish);
         fish.userData.thrown = true;
-        const dir = side==='right'?1:-1;
+        const dir = isRight?1:-1;
         fish.userData.velocity = new THREE.Vector3(0.22*dir, 0.36, 0.06);
         fish.userData.angularVel = new THREE.Vector3((Math.random()*0.8-0.4), (Math.random()*1.6-0.8)*dir, (Math.random()*1.0-0.5));
         playSFX(sounds.whoosh);
