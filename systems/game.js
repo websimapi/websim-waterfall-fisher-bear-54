@@ -340,9 +340,11 @@ function grabAndThrow(fish) {
     if (fish.parent) fish.parent.remove(fish); hand.add(fish);
     fish.position.set(0.08 * (isRight?1:-1), -0.35, 0.30);
     fish.rotation.set(-Math.PI/6, isRight?Math.PI/2:-Math.PI/2, Math.PI);
-    const bend1 = new TWEEN.Tween(bear.rotation).to({ x: -0.28 }, 140).easing(TWEEN.Easing.Sine.InOut);
-    const prep  = new TWEEN.Tween(arm.rotation).to({ x: -0.6 }, 140).easing(TWEEN.Easing.Sine.InOut);
-    const throwTw = new TWEEN.Tween(arm.rotation).to({ x: 1.25 }, 180).easing(TWEEN.Easing.Sine.Out).onStart(()=>{
+    const easeInOut = (TWEEN.Easing && TWEEN.Easing.Sine && TWEEN.Easing.Sine.InOut) || ((k)=>k);
+    const easeOut = (TWEEN.Easing && TWEEN.Easing.Sine && TWEEN.Easing.Sine.Out) || ((k)=>k);
+    const bend1 = new TWEEN.Tween(bear.rotation).to({ x: -0.28 }, 140).easing(easeInOut);
+    const prep  = new TWEEN.Tween(arm.rotation).to({ x: -0.6 }, 140).easing(easeInOut);
+    const throwTw = new TWEEN.Tween(arm.rotation).to({ x: 1.25 }, 180).easing(easeOut).onStart(()=>{
         if (fish.parent) hand.remove(fish), scene.add(fish);
         fish.userData.thrown = true;
         const dir = isRight?1:-1;
@@ -350,6 +352,6 @@ function grabAndThrow(fish) {
         fish.userData.angularVel = new THREE.Vector3((Math.random()*0.8-0.4), (Math.random()*1.6-0.8)*dir, (Math.random()*1.0-0.5));
         playSFX(sounds.whoosh);
     });
-    const recover = new TWEEN.Tween(bear.rotation).to({ x: 0 }, 220).easing(TWEEN.Easing.Sine.Out);
+    const recover = new TWEEN.Tween(bear.rotation).to({ x: 0 }, 220).easing(easeOut);
     bend1.start(); prep.start(); bend1.chain(recover); prep.chain(throwTw);
 }
