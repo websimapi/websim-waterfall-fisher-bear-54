@@ -331,11 +331,12 @@ function grabAndThrow(fish) {
     const side = fish.position.x >= bear.position.x ? 'right' : 'left';
     const hand = getHandAnchor(bear, side);
     if (!hand) return;
+    const arm = bear.getObjectByName(side==='right'?'rightArm':'leftArm');
+    if (!arm || !arm.rotation) return; // guard against missing arm
     fish.userData.velocity.set(0,0,0); fish.userData.pattern = 'held';
     if (fish.parent) fish.parent.remove(fish); hand.add(fish);
     fish.position.set(0.08 * (side==='right'?1:-1), -0.35, 0.30);
     fish.rotation.set(-Math.PI/6, side==='right'?Math.PI/2:-Math.PI/2, Math.PI);
-    const arm = bear.getObjectByName(side==='right'?'rightArm':'leftArm');
     const bend1 = new TWEEN.Tween(bear.rotation).to({ x: -0.28 }, 140).easing(TWEEN.Easing.Sine.InOut);
     const prep  = new TWEEN.Tween(arm.rotation).to({ x: -0.6 }, 140).easing(TWEEN.Easing.Sine.InOut);
     const throwTw = new TWEEN.Tween(arm.rotation).to({ x: 1.25 }, 180).easing(TWEEN.Easing.Sine.Out).onStart(()=>{
