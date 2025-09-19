@@ -296,6 +296,8 @@ export function updateGame() {
                 if (f.position.y < -10 || Math.abs(f.position.x) > 30 || f.position.z > 20) { scene.remove(f); activeFishes.splice(i,1); }
                 continue;
             }
+            // Skip catch/fail checks for fish already caught (attached to hand)
+            if (f.userData?.caught) continue;
             if (f.position.z >= catchZ) {
                 const withinX = Math.abs(f.position.x - bear.position.x) <= (bear.userData.netWidth || 1) / 2;
                 if (withinX) {
@@ -329,6 +331,8 @@ export function updateGame() {
 function grabAndThrow(fish) {
     if (!bear || !fish || fish.userData?.thrown) return;
     if (!fish.userData) fish.userData = {};
+    // mark as caught so it won't trigger fail checks while attached to the hand
+    fish.userData.caught = true;
     if (!fish.userData.velocity || !fish.userData.velocity.set) fish.userData.velocity = new THREE.Vector3(0,0,0);
     const side = fish.position.x >= bear.position.x ? 'right' : 'left';
     let hand = getHandAnchor(bear, side) || getHandAnchor(bear, side === 'right' ? 'left' : 'right');
