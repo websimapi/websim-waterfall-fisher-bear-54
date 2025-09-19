@@ -9,6 +9,8 @@ export const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window
 camera.position.set(0, 12, 9);
 camera.lookAt(0, 2, 0);
 
+export let glSupported = true;
+
 export const renderer = (() => {
     try {
         return new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance', failIfMajorPerformanceCaveat: false });
@@ -18,7 +20,9 @@ export const renderer = (() => {
             return new THREE.WebGL1Renderer({ antialias: false, alpha: false, powerPreference: 'default', failIfMajorPerformanceCaveat: false });
         } catch (e2) {
             console.error('WebGL initialization failed', e2);
-            throw e2;
+            glSupported = false;
+            const div = document.createElement('div'); div.id = 'webgl-error';
+            return { domElement: div, setPixelRatio() {}, setSize() {}, render() {} };
         }
     }
 })();
@@ -56,4 +60,7 @@ export function mountRenderer(container) {
     renderer.setPixelRatio(window.devicePixelRatio || 1);
     container.appendChild(renderer.domElement);
     resizeRenderer();
+    if (!glSupported) {
+        renderer.domElement.innerHTML = 'Your browser/device cannot create a WebGL context. Please enable hardware acceleration or update your browser.';
+    }
 }
